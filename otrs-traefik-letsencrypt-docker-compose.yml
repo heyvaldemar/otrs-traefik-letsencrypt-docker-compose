@@ -43,6 +43,12 @@ services:
       MYSQL_ROOT_USER: root
       # MySQL root password (replace with yours)
       MYSQL_ROOT_PASSWORD: uNxRFhaG43PcUFiVwkfq
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
   otrs:
@@ -98,8 +104,10 @@ services:
       - "traefik.http.middlewares.compresstraefik.compress=true"
     restart: unless-stopped
     depends_on:
-      - mariadb
-      - traefik
+      mariadb:
+        condition: service_healthy
+      traefik:
+        condition: service_healthy
 
   traefik:
     # Image tag (replace with yours)
