@@ -14,6 +14,9 @@ https://otrs.heyvaldemar.net/otrs/index.pl
 ### Customer Interface
 https://otrs.heyvaldemar.net/otrs/customer.pl
 
+# Infrastructure Model
+![Infrastructure model](.infragenie/infrastructure_model.png)
+
 # Author
 hey, I’m Vladimir Mikhalev, but my friends call me Valdemar.
 
