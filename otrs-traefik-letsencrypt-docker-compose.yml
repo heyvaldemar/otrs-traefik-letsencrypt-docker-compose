@@ -1,3 +1,15 @@
+# Image pins live HERE, as interpolation defaults, so `git pull` (or
+# re-downloading this file) delivers the exact version combination this
+# repository has tested — no .env editing required. Setting the matching
+# variable in .env overrides the default for anyone who wants to pin
+# differently; .env itself carries only secrets and deliberate overrides.
+# CI (Trivy scans, check-pin-freshness, the ephemeral test .env) reads
+# the pins from these lines — this block is the single source of truth.
+x-images:
+  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:3.7@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf}
+  otrs-mariadb: &otrs-mariadb-image ${OTRS_MARIADB_IMAGE_TAG:-juanluisbaptiste/otrs-mariadb:latest@sha256:d0c58adee2774fcfff741589b07dcf7b43862feba2528771d1495aae0511e53b}
+  znuny: &znuny-image ${OTRS_IMAGE_TAG:-juanluisbaptiste/znuny:latest@sha256:46414f8455a892e2083a1e8aaad2fb25c03b82e63cb27fca2bbd270d2ae022d4}
+
 networks:
   otrs-network:
     external: true
@@ -14,18 +26,18 @@ volumes:
 
 services:
   mariadb:
-    image: ${OTRS_MARIADB_IMAGE_TAG}
+    image: *otrs-mariadb-image
     volumes:
       - mariadb-data:/var/lib/mysql
     environment:
-      OTRS_DB_NAME: ${OTRS_DB_NAME}
-      OTRS_DB_USER: ${OTRS_DB_USER}
-      OTRS_DB_PASSWORD: ${OTRS_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${OTRS_DB_ADMIN_PASSWORD}
+      OTRS_DB_NAME: ${OTRS_DB_NAME:-otrsdb}
+      OTRS_DB_USER: ${OTRS_DB_USER:-otrsdbbuser}
+      OTRS_DB_PASSWORD: ${OTRS_DB_PASSWORD:?set in .env - see .env.example for generation command}
+      MYSQL_ROOT_PASSWORD: ${OTRS_DB_ADMIN_PASSWORD:?set in .env - see .env.example for generation command}
     networks:
       - otrs-network
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u $OTRS_DB_USER --password=$OTRS_DB_PASSWORD"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u $$OTRS_DB_USER --password=$$OTRS_DB_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -33,30 +45,30 @@ services:
     restart: unless-stopped
 
   otrs:
-    image: ${OTRS_IMAGE_TAG}
+    image: *znuny-image
     volumes:
-      - otrs-data:${DATA_PATH}
+      - otrs-data:${DATA_PATH:-/opt/otrs}
     environment:
       OTRS_DB_HOST: mariadb
       OTRS_DB_PORT: 3306
-      OTRS_DB_NAME: ${OTRS_DB_NAME}
-      OTRS_DB_USER: ${OTRS_DB_USER}
+      OTRS_DB_NAME: ${OTRS_DB_NAME:-otrsdb}
+      OTRS_DB_USER: ${OTRS_DB_USER:-otrsdbbuser}
       OTRS_DB_PASSWORD: ${OTRS_DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${OTRS_DB_ADMIN_PASSWORD}
-      OTRS_LANGUAGE: ${OTRS_LANGUAGE}
-      OTRS_ROOT_PASSWORD: ${OTRS_ADMIN_PASSWORD}
-      OTRS_TIMEZONE: ${OTRS_TIMEZONE}
-      OTRS_TICKET_COUNTER: ${OTRS_TICKET_COUNTER}
+      OTRS_LANGUAGE: ${OTRS_LANGUAGE:-en}
+      OTRS_ROOT_PASSWORD: ${OTRS_ADMIN_PASSWORD:?set in .env - see .env.example for generation command}
+      OTRS_TIMEZONE: ${OTRS_TIMEZONE:-UTC}
+      OTRS_TICKET_COUNTER: ${OTRS_TICKET_COUNTER:-1}
       OTRS_INSTALL: 'no'
-      OTRS_NUMBER_GENERATOR: ${OTRS_NUMBER_GENERATOR}
+      OTRS_NUMBER_GENERATOR: ${OTRS_NUMBER_GENERATOR:-AutoIncrement}
       OTRS_SET_PERMISSIONS: 'yes'
       OTRS_ALLOW_NOT_VERIFIED_PACKAGES: 'yes'
       SHOW_OTRS_LOGO: 'no'
       OTRS_SENDMAIL_MODULE: SMTPS
-      OTRS_SMTP_SERVER: ${OTRS_SMTP_ADDRESS}
-      OTRS_SMTP_PORT: ${OTRS_SMTP_PORT}
-      OTRS_SMTP_USERNAME: ${OTRS_SMTP_USER_NAME}
-      OTRS_SMTP_PASSWORD: ${OTRS_SMTP_PASSWORD}
+      OTRS_SMTP_SERVER: ${OTRS_SMTP_ADDRESS:-}
+      OTRS_SMTP_PORT: ${OTRS_SMTP_PORT:-587}
+      OTRS_SMTP_USERNAME: ${OTRS_SMTP_USER_NAME:-}
+      OTRS_SMTP_PASSWORD: ${OTRS_SMTP_PASSWORD:-}
     networks:
       - otrs-network
       - traefik-network
@@ -70,7 +82,7 @@ services:
       # Enable Traefik for this container
       - "traefik.enable=true"
       # Match incoming requests on a specific hostname
-      - "traefik.http.routers.otrs.rule=Host(`${OTRS_HOSTNAME}`)"
+      - "traefik.http.routers.otrs.rule=Host(`${OTRS_HOSTNAME:?set in .env - see .env.example}`)"
       # Assign the router to a named Traefik service
       - "traefik.http.routers.otrs.service=otrs"
       # Use the 'websecure' (HTTPS) entry point
@@ -97,10 +109,10 @@ services:
         condition: service_healthy
 
   traefik:
-    image: ${TRAEFIK_IMAGE_TAG}
+    image: *traefik-image
     command:
       # Set the log level (DEBUG, INFO, WARN, ERROR)
-      - "--log.level=${TRAEFIK_LOG_LEVEL}"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-WARN}"
       # Enable the built-in API and web-based dashboard
       - "--api.dashboard=true"
       # Enable the /ping endpoint so we can health-check Traefik
@@ -125,7 +137,7 @@ services:
       # Use ACME (Let's Encrypt) to generate/renew certificates via TLS challenge
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       # The email address used by Let's Encrypt for renewal notices
-      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL:?set in .env - see .env.example}"
       # The file where ACME certificates are stored inside the container
       - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
       # Enable Prometheus metrics
@@ -154,14 +166,14 @@ services:
       # Enable Traefik for this container
       - "traefik.enable=true"
       # A router to expose the Traefik dashboard
-      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME:?set in .env - see .env.example}`)"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       # Basic Authentication for the Traefik dashboard
       - "traefik.http.routers.dashboard.middlewares=authtraefik"
-      - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+      - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH:?set in .env - see .env.example for htpasswd generation}"
       # Specify the internal server port to the dashboard service
       - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
       # Pass the original Host header to the backend
@@ -169,33 +181,33 @@ services:
     restart: unless-stopped
 
   backups:
-    image: ${OTRS_MARIADB_IMAGE_TAG}
+    image: *otrs-mariadb-image
     command: >-
-      sh -c 'sleep $BACKUP_INIT_SLEEP &&
+      sh -c 'sleep $$BACKUP_INIT_SLEEP &&
       while true; do
-        mysqldump -h mariadb -u $OTRS_DB_USER -p"$OTRS_DB_PASSWORD" $OTRS_DB_NAME | gzip > "$MARIADB_BACKUPS_PATH/$MARIADB_BACKUP_NAME-$(date '+%Y-%m-%d_%H-%M').gz" &&
-        tar -zcpf $DATA_BACKUPS_PATH/$DATA_BACKUP_NAME-$(date "+%Y-%m-%d_%H-%M").tar.gz $DATA_PATH &&
-        find $MARIADB_BACKUPS_PATH -type f -mtime +$MARIADB_BACKUP_PRUNE_DAYS | xargs rm -f &&
-        find $DATA_BACKUPS_PATH -type f -mtime +$DATA_BACKUP_PRUNE_DAYS | xargs rm -f;
-        sleep $BACKUP_INTERVAL; done'
+        mysqldump -h mariadb -u $$OTRS_DB_USER -p"$$OTRS_DB_PASSWORD" $$OTRS_DB_NAME | gzip > "$$MARIADB_BACKUPS_PATH/$$MARIADB_BACKUP_NAME-$$(date '+%Y-%m-%d_%H-%M').gz" &&
+        tar -zcpf $$DATA_BACKUPS_PATH/$$DATA_BACKUP_NAME-$$(date "+%Y-%m-%d_%H-%M").tar.gz $$DATA_PATH &&
+        find $$MARIADB_BACKUPS_PATH -type f -mtime +$$MARIADB_BACKUP_PRUNE_DAYS | xargs rm -f &&
+        find $$DATA_BACKUPS_PATH -type f -mtime +$$DATA_BACKUP_PRUNE_DAYS | xargs rm -f;
+        sleep $$BACKUP_INTERVAL; done'
     volumes:
       - otrs-mariadb-backup:/var/lib/mysql
-      - otrs-data:${DATA_PATH}
-      - otrs-data-backups:${DATA_BACKUPS_PATH}
-      - otrs-database-backups:${MARIADB_BACKUPS_PATH}
+      - otrs-data:${DATA_PATH:-/opt/otrs}
+      - otrs-data-backups:${DATA_BACKUPS_PATH:-/srv/otrs-application-data/backups}
+      - otrs-database-backups:${MARIADB_BACKUPS_PATH:-/srv/otrs-mariadb/backups}
     environment:
-      OTRS_DB_NAME: ${OTRS_DB_NAME}
-      OTRS_DB_USER: ${OTRS_DB_USER}
+      OTRS_DB_NAME: ${OTRS_DB_NAME:-otrsdb}
+      OTRS_DB_USER: ${OTRS_DB_USER:-otrsdbbuser}
       OTRS_DB_PASSWORD: ${OTRS_DB_PASSWORD}
-      BACKUP_INIT_SLEEP: ${BACKUP_INIT_SLEEP}
-      BACKUP_INTERVAL: ${BACKUP_INTERVAL}
-      MARIADB_BACKUP_PRUNE_DAYS: ${MARIADB_BACKUP_PRUNE_DAYS}
-      DATA_BACKUP_PRUNE_DAYS: ${DATA_BACKUP_PRUNE_DAYS}
-      MARIADB_BACKUPS_PATH: ${MARIADB_BACKUPS_PATH}
-      DATA_BACKUPS_PATH: ${DATA_BACKUPS_PATH}
-      DATA_PATH: ${DATA_PATH}
-      MARIADB_BACKUP_NAME: ${MARIADB_BACKUP_NAME}
-      DATA_BACKUP_NAME: ${DATA_BACKUP_NAME}
+      BACKUP_INIT_SLEEP: ${BACKUP_INIT_SLEEP:-30m}
+      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-24h}
+      MARIADB_BACKUP_PRUNE_DAYS: ${MARIADB_BACKUP_PRUNE_DAYS:-7}
+      DATA_BACKUP_PRUNE_DAYS: ${DATA_BACKUP_PRUNE_DAYS:-7}
+      MARIADB_BACKUPS_PATH: ${MARIADB_BACKUPS_PATH:-/srv/otrs-mariadb/backups}
+      DATA_BACKUPS_PATH: ${DATA_BACKUPS_PATH:-/srv/otrs-application-data/backups}
+      DATA_PATH: ${DATA_PATH:-/opt/otrs}
+      MARIADB_BACKUP_NAME: ${MARIADB_BACKUP_NAME:-otrs-mariadb-backup}
+      DATA_BACKUP_NAME: ${DATA_BACKUP_NAME:-otrs-application-data-backup}
     networks:
       - otrs-network
     restart: unless-stopped
