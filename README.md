@@ -48,7 +48,7 @@ curl -fskL -o /dev/null -w "%{http_code}\n" "https://${OTRS_HOSTNAME}/otrs/index
 
 Three images — [`traefik`](https://hub.docker.com/_/traefik), [`juanluisbaptiste/znuny`](https://hub.docker.com/r/juanluisbaptiste/znuny), [`juanluisbaptiste/otrs-mariadb`](https://hub.docker.com/r/juanluisbaptiste/otrs-mariadb) — pinned by digest as interpolation defaults in the compose `x-images` block. `git pull` alone delivers the tested combination.
 
-The weekly `check-pin-freshness` CI job re-resolves each pin against its registry (digest drift) and compares the pinned Traefik version against the latest release. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
+The daily `check-pin-freshness` CI job re-resolves each pin against its registry (digest drift) and compares the pinned Traefik version against the latest release. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
 ## Production checklist
 
@@ -67,7 +67,7 @@ Every service carries memory and CPU limits plus reservations as compose-level d
 
 ## Testing
 
-The [Deployment Verification](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every Monday at 06:00 UTC: shellcheck + actionlint, Trivy scans of all three pinned images, the weekly digest check, and a deploy-and-test job that boots the stack with ephemeral credentials and requires the Znuny login page to answer through Traefik.
+The [Deployment Verification](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every day at 06:00 UTC: shellcheck + actionlint, Trivy scans of all three pinned images, the weekly digest check, and a deploy-and-test job that boots the stack with ephemeral credentials and requires the Znuny login page to answer through Traefik.
 
 ### Backup and restore, proven
 
