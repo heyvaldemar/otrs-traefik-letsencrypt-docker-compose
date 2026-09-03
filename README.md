@@ -48,6 +48,8 @@ curl -fskL -o /dev/null -w "%{http_code}\n" "https://${OTRS_HOSTNAME}/otrs/index
 
 Three images ([`traefik`](https://hub.docker.com/_/traefik), [`juanluisbaptiste/znuny`](https://hub.docker.com/r/juanluisbaptiste/znuny), [`juanluisbaptiste/otrs-mariadb`](https://hub.docker.com/r/juanluisbaptiste/otrs-mariadb)) pinned by digest as interpolation defaults in the compose `x-images` block. `git pull` alone delivers the tested combination.
 
+Two override levels exist per image. `<PREFIX>_IMAGE_VERSION` in `.env` swaps only the version of that image (Compose then pulls the tag, without a digest) and leaves every other pin as tested; `<PREFIX>_IMAGE_TAG` replaces the whole reference, digest included. The variable names are listed in `.env.example`. Nested defaults need Docker Compose v2.5 or newer (2022); v2.0 to v2.4 leave the inner `${...}` unexpanded and `docker compose up` fails with an invalid reference instead of deploying something unexpected.
+
 The daily `check-pin-freshness` CI job re-resolves each pin against its registry (digest drift) and compares the pinned Traefik version against the latest release. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
 ## Production checklist
