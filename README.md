@@ -3,9 +3,9 @@
 [![Deployment Verification](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository deploys **Znuny** (the community fork of OTRS) behind **Traefik** with automatic **Let's Encrypt TLS**, backed by **MariaDB**, with scheduled **backups** (database + application data) and companion **restore scripts**.
+This repository deploys Znuny (the community fork of OTRS) behind Traefik with automatic Let's Encrypt TLS, backed by MariaDB, with scheduled backups (database + application data) and companion restore scripts.
 
-> ⚠️ **Upstream honesty note.** The community images this template builds on (`juanluisbaptiste/znuny` and its MariaDB companion) have not been rebuilt since May 2023. This template pins the exact digests CI verifies to boot and serve, and the weekly digest check will flag if upstream ever moves, but no new Znuny releases or security patches are flowing into these images. For a maintained open-source helpdesk, consider the [Zammad template](https://github.com/heyvaldemar/zammad-traefik-letsencrypt-docker-compose).
+> ⚠️ Upstream honesty note. The community images this template builds on (`juanluisbaptiste/znuny` and its MariaDB companion) have not been rebuilt since May 2023. This template pins the exact digests CI verifies to boot and serve, and the weekly digest check will flag if upstream ever moves, but no new Znuny releases or security patches are flowing into these images. For a maintained open-source helpdesk, consider the [Zammad template](https://github.com/heyvaldemar/zammad-traefik-letsencrypt-docker-compose).
 
 ## Getting started
 
@@ -86,7 +86,7 @@ chmod +x tests/e2e-backup-restore.sh
 
 It stops the database container briefly to prove failure detection. Run it on a staging copy, not on production.
 
-## Security Notes
+## Security notes
 
 - Credentials are read from `.env` at deploy time; `.env` is gitignored and compose fails fast on missing required variables.
 - **Pre-rotation advisory.** Releases before v1.0.0 (2026-09-01) shipped a tracked `.env` with generated-looking database and admin passwords plus SMTP relay credentials. Rotate them all if your deployment reused them.
