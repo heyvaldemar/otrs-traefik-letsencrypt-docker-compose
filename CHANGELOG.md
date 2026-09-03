@@ -65,7 +65,7 @@ _(no unreleased changes yet)_
 
 ### Added
 
-- **`tests/e2e-backup-restore.sh`** — seven end-to-end scenarios against
+- **`tests/e2e-backup-restore.sh`**: seven end-to-end scenarios against
   the live stack, run by CI on every push and by you locally: the
   required-variable guard fires, a backup is produced, it is a readable
   archive with real dump content (and a readable data `tar.gz` where the
@@ -108,14 +108,14 @@ v1.2.0.
   [zammad template](https://github.com/heyvaldemar/zammad-traefik-letsencrypt-docker-compose).
 - **Traefik 3.2 → 3.7** (3.2's Docker client cannot talk to Docker
   Engine 29).
-- **SMTP is off by default** — set the `OTRS_SMTP_*` variables to
+- **SMTP is off by default**: set the `OTRS_SMTP_*` variables to
   enable outgoing mail.
 
 ### Security
 
 - **Credentials untracked from git.** The tracked `.env` carried
   generated-looking database and admin passwords plus SMTP relay
-  credentials — rotate them all if reused.
+  credentials. Rotate them all if reused.
 
 ### Fixed
 
