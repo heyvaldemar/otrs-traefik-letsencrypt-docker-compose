@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.7.4] - 2026-09-21
+
 ### Changed
 
 - **The database backup no longer prints an error on every successful run.** `mysqldump` was asking for tablespace information the application user has no privilege to read, printing `Access denied; you need (at least one of) the PROCESS privilege(s)` each time, exiting 0, and writing a complete dump regardless. `--no-tablespaces` removes the request. Measured against the pinned image: both dumps hash identically, 1819 bytes each — the flag removes the error line and changes nothing else. An error in the log of an operation that succeeded is what teaches somebody to skim past the one that matters.
@@ -208,7 +212,8 @@ v1.2.0.
   deploy-and-test job that boots the stack and requires the Znuny login
   page to answer through Traefik.
 
-[Unreleased]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.3...HEAD
+[Unreleased]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.4...HEAD
+[1.7.4]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.1...v1.7.2
 [1.7.0]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.6.0...v1.7.0
