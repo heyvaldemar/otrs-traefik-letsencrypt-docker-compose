@@ -51,8 +51,8 @@ restart() { docker start "$APP" >/dev/null && echo "Started $APP_SERVICE"; }
 trap 'restart' EXIT
 echo "Restoring $SELECTED"
 if ! docker exec -e MYSQL_PWD="$DB_PASS" "$BKP" sh -c "(set -o pipefail) 2>/dev/null && set -o pipefail; set -eu
-    mariadb -h mariadb -u '$DB_USER' -e 'DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`;'
-    gunzip -c '$DIR/$SELECTED' | mariadb -h mariadb -u '$DB_USER' '$DB_NAME'"; then
+    mysql -h mariadb -u '$DB_USER' -e 'DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`;'
+    gunzip -c '$DIR/$SELECTED' | mysql -h mariadb -u '$DB_USER' '$DB_NAME'"; then
   echo "error: the restore failed part-way. The database may now be empty: restore another backup before using OTRS." >&2
   exit 1
 fi
