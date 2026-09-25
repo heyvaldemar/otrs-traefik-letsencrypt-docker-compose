@@ -1,6 +1,7 @@
 # Znuny (OTRS) + Traefik + Let's Encrypt on Docker Compose
 
 [![Deployment Verification](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14847/badge)](https://www.bestpractices.dev/projects/14847)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This repository deploys Znuny (the community fork of OTRS) behind Traefik with automatic Let's Encrypt TLS, backed by MariaDB, with scheduled backups (database + application data) and companion restore scripts.
