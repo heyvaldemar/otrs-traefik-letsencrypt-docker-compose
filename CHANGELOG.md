@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.2] - 2026-10-09
+
 ### Security
 
 - **`traefik:3.7` was rebuilt upstream**; the pin moved from `sha256:b588cb566045…` to `sha256:575fa15b1350…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -257,7 +261,8 @@ v1.2.0.
   deploy-and-test job that boots the stack and requires the Znuny login
   page to answer through Traefik.
 
-[Unreleased]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.8.1...HEAD
+[Unreleased]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.8.2...HEAD
+[1.8.2]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.8.1...v1.8.2
 [1.8.1]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.5...v1.8.0
 [1.7.4]: https://github.com/heyvaldemar/otrs-traefik-letsencrypt-docker-compose/compare/v1.7.3...v1.7.4
