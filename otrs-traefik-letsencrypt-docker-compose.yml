@@ -6,7 +6,7 @@
 # CI (Trivy scans, check-pin-freshness, the ephemeral test .env) reads
 # the pins from these lines — this block is the single source of truth.
 x-images:
-  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:8301d6f60957a422f98918aacf2b01482abde3e74ead3719aabdb7c64045fe28}}
+  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.8.0@sha256:00c9734983e74ae35a1fc18eaee9e9da13f3dde95c4e45b3b8c3b60e0dbd2d17}}
   otrs-mariadb: &otrs-mariadb-image ${OTRS_MARIADB_IMAGE_TAG:-juanluisbaptiste/otrs-mariadb:${OTRS_MARIADB_IMAGE_VERSION:-latest@sha256:d0c58adee2774fcfff741589b07dcf7b43862feba2528771d1495aae0511e53b}}
   znuny: &znuny-image ${OTRS_IMAGE_TAG:-juanluisbaptiste/znuny:${OTRS_IMAGE_VERSION:-latest@sha256:46414f8455a892e2083a1e8aaad2fb25c03b82e63cb27fca2bbd270d2ae022d4}}
 
